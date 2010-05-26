@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib import admin
 from django.contrib.admin.sites import NotRegistered
 
-from models import UserOpenidAssociation
+from django_openid.models import UserOpenidAssociation
 
 class OpenIDInline(admin.StackedInline):
     model = UserOpenidAssociation
