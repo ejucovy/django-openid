@@ -11,6 +11,11 @@ class AnonProvider(Provider):
     def user_trusts_root(self, *args):
         return True
 
+    def get_sreg_data(self, request, openid):
+        return {'email': 'ethan.jucovy+foo.bar@gmail.com',
+                'fullname': 'Lammy Lammerson',
+                }
+
 def openid_page(request, slug):
     return render('openid_page.html', {
         'slug': slug,
