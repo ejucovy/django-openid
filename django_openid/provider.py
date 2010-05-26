@@ -165,6 +165,7 @@ class Provider(object):
                     request, orequest.identity, orequest.trust_root
                 ):
                 oresponse = orequest.answer(True)
+                self.add_sreg_data(request, orequest, oresponse)
             elif orequest.immediate:
                 oresponse = orequest.answer(
                     False, request.build_absolute_uri()
@@ -173,7 +174,6 @@ class Provider(object):
                 return self.show_decide(request, orequest)
         else:
             oresponse = self.get_server(request).handleRequest(orequest)
-        self.add_sreg_data(request, orequest, oresponse)
         return self.server_response(request, oresponse)
     
     def show_this_is_an_openid_server(self, request):
