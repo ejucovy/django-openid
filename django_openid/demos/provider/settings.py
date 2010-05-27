@@ -77,5 +77,5 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.admin',
     'django_openid',
-    'anon_provider',
+    'auth_user_provider',
 )

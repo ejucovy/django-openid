@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 
 from webob import Request
 
-class AnonProvider(Provider):
+class AuthProvider(Provider):
     def user_is_logged_in(self, request):
         return request.user.is_authenticated()
     
