@@ -140,7 +140,7 @@ class Provider(object):
             ), extra_key = self.orequest_salt)
         except signed.BadSignature:
             return None
-    
+
     def __call__(self, request):
         # If this is a POST from the decide page, behave differently
         if '_decide' in request.POST:
