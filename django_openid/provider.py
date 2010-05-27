@@ -63,7 +63,6 @@ class Provider(object):
         response = self.render(request, self.landing_page_template, {
             'identity_url': orequest.identity,
         })
-        self.stash_incomplete_orequest(request, response, orequest)
         return response
     
     def stash_incomplete_orequest(self, request, response, orequest):
@@ -82,11 +81,15 @@ class Provider(object):
         # If user is logged in, ask if they want to trust this trust_root
         # If they are NOT logged in, show the landing page:
         if not self.user_is_logged_in(request):
-            return self.show_landing_page(request, orequest)
-        
+            response = self.show_landing_page(request, orequest)
+            self.stash_incomplete_orequest(request, response, orequest)
+            return response
+
         # Check that the user owns the requested identity
         if not self.user_owns_openid(request, orequest.identity):
-            return self.show_error(request, self.not_your_openid_message)
+            response = self.show_error(request, self.not_your_openid_message)
+            self.stash_incomplete_orequest(request, response, orequest)
+            return response
         
         # They are logged in - ask if they want to trust this root
         return self.render(request, self.decide_template, {
