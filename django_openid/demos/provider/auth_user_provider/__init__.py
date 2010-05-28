@@ -1,20 +1,49 @@
 from django_openid.provider import Provider
 from django.shortcuts import render_to_response as render
+from django.http import HttpResponseRedirect
 
 from django.core.urlresolvers import reverse
 
+from django.contrib.auth import authenticate, login
+
 from webob import Request
+
+def temporary_login(username, password, request):
+    user = authenticate(username=username, password=password)
+    if user is None:
+        return False
+    return True
+
+def openid_login(request):
+    if request.method != "POST":
+        return HttpResponseRedirect('/server/')
+    openid = request.POST['username']
+    username = extract_username(openid, request)
+    print username
+    password = request.POST['password']
+    if not temporary_login(username, password, request):
+        return HttpResponseRedirect('/server/')
+    request.session['openid_login'] = openid
+    return HttpResponseRedirect('/server/')
+
+
+def extract_username(openid_url, request):
+    req = Request(request.environ)
+    assert openid_url.startswith(req.application_url)
+    openid_url = openid_url[len(req.application_url):]
+    return openid_url.strip('/')
 
 class AuthProvider(Provider):
     def user_is_logged_in(self, request):
-        return request.user.is_authenticated()
+        return 'openid_login' in request.session
     
     def user_owns_openid(self, request, openid):
-        my_openid_path = reverse('openid_page', args=[request.user.username])
-        req = Request(request.environ)
-        my_openid = req.application_url + my_openid_path
-        return my_openid == openid
-    
+        print "Logged in: %s" % request.session['openid_login']
+        print "Trying to use: %s" % openid
+        ownership = request.session['openid_login'] == openid
+        del request.session['openid_login']
+        return ownership
+
     def user_trusts_root(self, request, openid, trust_root):
         return True
 

@@ -3,8 +3,14 @@
 {% block title %}You need to log in{% endblock %}
 
 {% block content %}
-<h1>You need to log in</h1>
+<h1>Please enter your password to continue</h1>
 
-<p>You need to <a href="/accounts/login/">log in</a> to continue.</p>
+<form method="POST" action="{% url openid_login %}">
+
+  <input type="hidden" name="username" value="{{identity_url}}" />
+  <input type="password" name="password" />
+  <input type="submit" value="Go!" />
+
+</form>
 
 {% endblock %}
