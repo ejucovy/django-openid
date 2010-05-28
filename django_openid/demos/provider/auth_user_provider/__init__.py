@@ -33,7 +33,14 @@ def extract_username(openid_url, request):
     openid_url = openid_url[len(req.application_url):]
     return openid_url.strip('/')
 
+def extract_user(openid_url, request):
+    username = extract_username(openid_url, request)
+    return User.objects.get(username=username)
+
 class AuthProvider(Provider):
+
+    save_trusted_root = True
+
     def user_is_logged_in(self, request):
         return 'openid_login' in request.session
     
@@ -48,8 +55,9 @@ class AuthProvider(Provider):
         return True
 
     def get_sreg_data(self, request, openid):
-        return {'email': request.user.email,
-                'fullname': request.user.username,
+        user = extract_user(openid, request)
+        return {'email': user.email,
+                'fullname': user.username,
                 }
 
 from django.contrib.auth.models import User
