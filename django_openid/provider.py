@@ -91,6 +91,13 @@ class Provider(object):
             self.stash_incomplete_orequest(request, response, orequest)
             return response
         
+        return self.render_decide(request, orequest)
+
+    def render_decide(self, request, orequest):
+        """
+        Called after the user is confirmed as logged-in and owning the 
+        requested openid
+        """
         # They are logged in - ask if they want to trust this root
         return self.render(request, self.decide_template, {
             'trust_root': orequest.trust_root,
