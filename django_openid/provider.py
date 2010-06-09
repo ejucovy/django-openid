@@ -76,24 +76,8 @@ class Provider(object):
         return self.render(request, self.error_template, {
             'message': message,
         })
-    
+
     def show_decide(self, request, orequest):
-        # If user is logged in, ask if they want to trust this trust_root
-        # If they are NOT logged in, show the landing page:
-        if not self.user_is_logged_in(request):
-            response = self.show_landing_page(request, orequest)
-            self.stash_incomplete_orequest(request, response, orequest)
-            return response
-
-        # Check that the user owns the requested identity
-        if not self.user_owns_openid(request, orequest.identity):
-            response = self.show_error(request, self.not_your_openid_message)
-            self.stash_incomplete_orequest(request, response, orequest)
-            return response
-        
-        return self.render_decide(request, orequest)
-
-    def render_decide(self, request, orequest):
         """
         Called after the user is confirmed as logged-in and owning the 
         requested openid
@@ -151,6 +135,30 @@ class Provider(object):
         except signed.BadSignature:
             return None
 
+    def pick_response(self, request, orequest):
+        # If user is NOT logged in, show the landing page
+        if not self.user_is_logged_in(request):
+            response = self.show_landing_page(request, orequest)
+            self.stash_incomplete_orequest(request, response, orequest)
+            return response
+
+        # User is logged in; check that the user owns the requested identity
+        if not self.user_owns_openid(request, orequest.identity):
+            response = self.show_error(request, self.not_your_openid_message)
+            self.stash_incomplete_orequest(request, response, orequest)
+            return response
+
+        # If user is logged in, ask if they want to trust this trust_root
+        if self.save_trusted_roots == False:
+            return self.show_decide(request, orequest)
+        elif not self.user_trusts_root(request, openid, trust_root):
+            return self.show_decide(request, orequest)
+
+        # User is logged in, owns the claimed OpenID, and already trusts
+        # this trust_root; we can just answer in the affirmative now
+        oresponse = orequest.answer(True)
+        return self.server_response(request, oresponse)
+
     def __call__(self, request):
         # If this is a POST from the decide page, behave differently
         if '_decide' in request.POST:
@@ -166,9 +174,9 @@ class Provider(object):
             # away and logged in again, then were pushed back to here) we 
             # need to offer to complete that. Otherwise, just show a message.
             orequest = self.extract_incomplete_orequest(request)
-            if orequest:
-                return self.show_decide(request, orequest)
-            return self.show_this_is_an_openid_server(request)
+            if not orequest:
+                return self.show_this_is_an_openid_server(request)
+            return self.pick_response(request, orequest)
         
         if orequest.mode in ("checkid_immediate", "checkid_setup"):
             if self.openid_is_authorized(
@@ -181,7 +189,7 @@ class Provider(object):
                     False, request.build_absolute_uri()
                 )
             else:
-                return self.show_decide(request, orequest)
+                return self.pick_reponse(request, orequest)
         else:
             oresponse = self.get_server(request).handleRequest(orequest)
         return self.server_response(request, oresponse)
