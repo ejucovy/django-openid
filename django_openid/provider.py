@@ -153,7 +153,7 @@ class Provider(object):
         # If user is logged in, ask if they want to trust this trust_root
         if self.save_trusted_roots == False:
             return self.show_decide(request, orequest)
-        elif not self.user_trusts_root(request, openid, trust_root):
+        elif not self.user_trusts_root(request, openid, orequest.trust_root):
             return self.show_decide(request, orequest)
 
         # User is logged in, owns the claimed OpenID, and already trusts
