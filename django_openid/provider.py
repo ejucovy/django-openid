@@ -142,8 +142,10 @@ class Provider(object):
             self.stash_incomplete_orequest(request, response, orequest)
             return response
 
+        openid = orequest.identity
+
         # User is logged in; check that the user owns the requested identity
-        if not self.user_owns_openid(request, orequest.identity):
+        if not self.user_owns_openid(request, openid):
             response = self.show_error(request, self.not_your_openid_message)
             self.stash_incomplete_orequest(request, response, orequest)
             return response
