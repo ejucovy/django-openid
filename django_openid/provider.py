@@ -189,7 +189,7 @@ class Provider(object):
                     False, request.build_absolute_uri()
                 )
             else:
-                return self.pick_reponse(request, orequest)
+                return self.pick_response(request, orequest)
         else:
             oresponse = self.get_server(request).handleRequest(orequest)
         return self.server_response(request, oresponse)
